@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<Title>Multiplayer Snake!</Title>
+	<style>
+	html, body {
+		height: 100%;
+		margin: 0;
+	}
+	body {
+		background: black;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	canvas, section {
+		border: 1px solid white;
+	}
+	h2 {
+		font: 15px courier, courier new, serif;
+		color: white;
+		padding: 10px;
+	}
+	h1 {
+		font: 35px Blippo, fantasy;
+		color: green;
+		text-align: center;
+	}
+	section {
+		height: 560px;
+		width: 400px;
+		margin: 25px;
+	}
+	</style>
+	</head>
+	<body>
+		<section>
+		<h1>SNAKEWARS!</h1>
+		<h2>Growth Count: <Input type="number" value="5" id="growthCount" min="0"></h2>
+		<h2>Apple Count: <Input type="number" value="5" id="appleCount" min="0"></h2>
+		<h2>Player Count: <Input type="number" value="4" id="playerCount" min="1" max="4"></h2>
+		<h2><Input type="submit" id="reset" value="Change Settings" onclick="reset()"></h2>
+		</section>
+		<canvas width="800" height="560" id="game"></canvas>
+		<script>
+			var canvas = document.getElementById('game');
+			var context = canvas.getContext('2d');
+			var winner;
+			var start = false;
+			var firstTime = true;
+			var winningScreen = false;
+			var grid = 16;
+			var count = 0;
+			var userCount = parseInt(document.getElementById('playerCount').value);
+			var growCount = parseInt(document.getElementById('growthCount').value);
+			var appleCount = parseInt(document.getElementById('appleCount').value);
+			var apples = new Array(appleCount);
+			createApples();
+			var snake = [{
+
+				x: 80,
+				y: 272,
+  
+				dx: 0,
+				dy: grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+				
+				color: 'green',
+				
+				isAlive: true
+			},{
+				x: 240,
+				y: 304,
+  
+				dx: 0,
+				dy: -grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+				
+				color: 'blue',
+				
+				isAlive: true
+			},{
+				x: 560,
+				y: 272,
+  
+				dx: 0,
+				dy: grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+
+				color: 'yellow',
+				
+				isAlive: true
+			},{
+				x: 720,
+				y: 304,
+  
+				dx: 0,
+				dy: -grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+
+				color: 'purple',
+				
+				isAlive: true
+			}];
+
+			
+			function reset() {
+				snake = [{
+
+				x: 80,
+				y: 272,
+  
+				dx: 0,
+				dy: grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+				
+				color: 'green',
+				
+				isAlive: true
+			},{
+				x: 240,
+				y: 304,
+  
+				dx: 0,
+				dy: -grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+				
+				color: 'blue',
+				
+				isAlive: true
+			},{
+				x: 560,
+				y: 272,
+  
+				dx: 0,
+				dy: grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+
+				color: 'yellow',
+				
+				isAlive: true
+			},{
+				x: 720,
+				y: 304,
+  
+				dx: 0,
+				dy: -grid,
+  
+				cells: [],
+  
+				maxCells: 4,
+
+				color: 'purple',
+				
+				isAlive: true
+			}];
+
+				growCount = parseInt(document.getElementById('growthCount').value);
+				userCount = parseInt(document.getElementById('playerCount').value);
+				appleCount = parseInt(document.getElementById('appleCount').value);
+				apples = new Array(appleCount);
+				createApples();
+				start = false;
+				firstTime = true;
+				winningScreen = false;
+				
+			}
+			
+			function createApples() {
+				for(i=0;i<appleCount;i++) {
+					apples[i] = {
+						x: getRandomInt(0,50) * grid,
+						y: getRandomInt(0,35) * grid
+					}
+				}
+			}
+			
+			function getRandomInt(min, max) {
+				return Math.floor(Math.random() * (max - min)) + min;
+			}
+			
+			function loop() {
+				requestAnimationFrame(loop);
+				
+				if(++count<4) {
+					return;
+				}
+				
+				if (firstTime || start) {
+					count = 0;
+					context.clearRect(0,0,canvas.width,canvas.height);
+					
+					for (i=0;i<userCount;i++) {
+						if(snake[i].isAlive) {
+							snake[i].x += snake[i].dx;
+							snake[i].y += snake[i].dy;
+							if (snake[i].x < 0) {
+								snake[i].x = canvas.width - grid;
+							}
+							else if (snake[i].x >= canvas.width) {
+								snake[i].x = 0;
+							}
+							
+							if (snake[i].y < 0) {
+								snake[i].y = canvas.height - grid;
+							}
+							else if (snake[i].y >= canvas.height) {
+								snake[i].y = 0;
+							}
+						}
+						snake[i].cells.unshift({x: snake[i].x, y: snake[i].y});
+						if (snake[i].cells.length > snake[i].maxCells) {
+							snake[i].cells.pop();
+						}
+					}
+					if (!firstTime) {
+						context.fillStyle = 'red';
+						apples.forEach(function(apple) {
+							context.fillRect(apple.x, apple.y, grid-1, grid-1);
+						});
+					}
+					for (j=0;j<userCount;j++) {
+						context.fillStyle = snake[j].color;
+						snake[j].cells.forEach(function(cell, index) {
+						context.fillRect(cell.x, cell.y, grid-1, grid-1); 
+						apples.forEach(function(apple) {
+							if (cell.x === apple.x && cell.y === apple.y) {
+							  snake[j].maxCells += growCount;
+							  apple.x = getRandomInt(0, 50) * grid;
+							  apple.y = getRandomInt(0, 35) * grid;
+							}
+						});
+						for (var k = 0; k<userCount;k++) {
+							for (var i = index; i < snake[k].cells.length; i++) {
+								if (cell.x === snake[k].cells[i].x && cell.y === snake[k].cells[i].y && (i != index || j != k)) {
+								snake[j].isAlive = false;
+								}
+							}
+						}
+					});
+					context.font = "25px courier, courier new, serif";
+					context.fillStyle = 'white';
+					context.textAlign = 'center';
+					if (!start) {
+						context.fillText("Press Spacebar to Start", canvas.width / 2, canvas.height / 4);
+						
+						context.fillText("A S D W", 80, 350);
+						if (userCount > 1) {
+							context.fillText("< V > ^", 240, 350);
+						}
+						if (userCount > 2) {
+							context.fillText("F G H T", 560, 350);
+						}
+						if (userCount > 3) {
+							context.fillText("J K L I", 720, 350);
+						}
+					}
+					if (winningScreen) {
+						context.fillText("Press Spacebar to Continue", canvas.width / 2, canvas.height / 4);
+						
+						if (winner == 4) {
+							context.fillText("Nobody Wins!",canvas.width / 2, canvas.height * 3 / 4);
+						} else {
+							context.fillStyle = snake[winner].color;
+							context.fillText("Player " + (winner + 1) + " wins!",canvas.width / 2, canvas.height * 3 / 4);
+						}
+					}
+					
+					}
+					
+					var numAlive = 0;
+					for (j=0;j<userCount;j++) {
+						if (!snake[j].isAlive) {
+						snake[j].maxCells = 0;
+						snake[j].cells = [];
+						} else {
+							numAlive++;
+						}
+					}
+				}
+				firstTime = false;
+				if (numAlive <= 1 && userCount != 1 && !winningScreen) {
+					winningScreen = true;
+					apples = new Array(0);
+					winner = 4;
+					for(i=0;i<4;i++) {
+						if (snake[i].isAlive && i < userCount) {
+							winner = i;
+						}
+					}
+				}
+				if (numAlive == 0 && userCount == 1) {
+					reset();
+				}
+			}
+			
+			document.addEventListener('keydown',function(e) {
+				//start button
+				if(e.which === 32) {
+					if (winningScreen) {
+						reset();
+					} else {
+						start = true;
+					}
+				}
+				
+				//Snake 1 (asdw)
+				
+				//left
+				if (e.which === 65 && snake[0].dx === 0) {
+					snake[0].dx = -grid;
+					snake[0].dy = 0;
+				}
+				  // up
+				else if (e.which === 87 && snake[0].dy === 0) {
+					snake[0].dy = -grid; 
+					snake[0].dx = 0;
+				}
+				  // right
+				else if (e.which === 68 && snake[0].dx === 0) {
+					snake[0].dx = grid;
+					snake[0].dy = 0;
+				}
+				  // down 
+				else if (e.which === 83 && snake[0].dy === 0) {
+					snake[0].dy = grid;
+					snake[0].dx = 0;
+				}
+				
+				//Snake 2 (arrow keys)
+				
+				//left
+				if (e.which === 37 && snake[1].dx === 0) {
+					snake[1].dx = -grid;
+					snake[1].dy = 0;
+				}
+				  // up
+				else if (e.which === 38 && snake[1].dy === 0) {
+					snake[1].dy = -grid;
+					snake[1].dx = 0;
+				}
+				  // right
+				else if (e.which === 39 && snake[1].dx === 0) {
+					snake[1].dx = grid;
+					snake[1].dy = 0;
+				}
+				  // down 
+				else if (e.which === 40 && snake[1].dy === 0) {
+					snake[1].dy = grid;
+					snake[1].dx = 0;
+				}				
+				
+				//Snake 3 (fght)
+				
+				//left
+				if (e.which === 70 && snake[2].dx === 0) {
+					snake[2].dx = -grid;
+					snake[2].dy = 0;
+				}
+				  // up
+				else if (e.which === 84 && snake[2].dy === 0) {
+					snake[2].dy = -grid;
+					snake[2].dx = 0;
+				}
+				  // right
+				else if (e.which === 72 && snake[2].dx === 0) {
+					snake[2].dx = grid;
+					snake[2].dy = 0;
+				}
+				  // down 
+				else if (e.which === 71 && snake[2].dy === 0) {
+					snake[2].dy = grid;
+					snake[2].dx = 0;
+				}
+
+				//Snake 4 (jkli)
+				
+				//left
+				if (e.which === 74 && snake[3].dx === 0) {
+					snake[3].dx = -grid;
+					snake[3].dy = 0;
+				}
+				  // up
+				else if (e.which === 73 && snake[3].dy === 0) {
+					snake[3].dy = -grid;
+					snake[3].dx = 0;
+				}
+				  // right
+				else if (e.which === 76 && snake[3].dx === 0) {
+					snake[3].dx = grid;
+					snake[3].dy = 0;
+				}
+				  // down 
+				else if (e.which === 75 && snake[3].dy === 0) {
+					snake[3].dy = grid;
+					snake[3].dx = 0;
+				}				
+			});
+			
+			requestAnimationFrame(loop);
+		</script>
+	</body>
+</html>
